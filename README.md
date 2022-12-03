@@ -1,5 +1,8 @@
-# Temporary fork (I hope)
+# Notice
 This is a fork from [github.com/microsoft/variable-substitution](https://github.com/microsoft/variable-substitution), so that I could fix the 'node12 is being deprecated' warning.
+
+# Notice 2
+I forked this from [github.com/rajbos-actions/variable-substitution](https://github.com/rajbos-actions/variable-substitution) fork that had already resolved the 'node12 is being deprecated' warning. This was so I could use receiptably in the action name and remove some additional workflows and code that were added by them, lightening the weight a tiny bit.
 
 # GitHub Action for substituting variables in parameterized files ![.github/workflows/ci.yml](https://github.com/rajbos-actions/variable-substitution/workflows/.github/workflows/ci.yml/badge.svg?branch=master)
 
@@ -32,7 +35,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - uses: microsoft/variable-substitution@v1 
+    - uses: receiptably/variable-substitution@v1
       with:
         files: 'Application/*.json, Application/*.yaml, ./Application/SampleWebApplication/We*.config'
       env:
