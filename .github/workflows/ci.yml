@@ -123,16 +123,16 @@ jobs:
   build_action_artifact:
     name: 'Build and publish artifact for release'
     runs-on: ${{ matrix.os }}
-    needs: test_action_job
+    # needs: test_action_job
     strategy:
         matrix:
-          os: [windows-latest, ubuntu-latest, macos-latest]
+          os: [ubuntu-latest]
 
     steps:
     - name: 'Checking out repo code'
       uses: actions/checkout@v3
 
-    - run: mkdir -p artifact/build
+    - run: mkdir -p ./build/artifact
 
     - uses: actions/setup-node@v3
       with:
@@ -145,6 +145,6 @@ jobs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
-        name: built-artifact
-        path: artifact/build
+        name: build
+        path: ./build/artifact
 
