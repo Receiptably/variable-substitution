@@ -136,14 +136,15 @@ jobs:
       with:
         node-version: 16
 
-    - name: 'Install node modules'
+    - name: 'Install node modules and build'
       run: |
         npm install
+        npm run build
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v3
       with:
         name: build
-        path: ./build/artifact/*
+        path: build/artifact/*
         if-no-files-found: error
 
