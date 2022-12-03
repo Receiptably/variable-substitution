@@ -122,7 +122,12 @@ jobs:
 
   build_action_artifact:
     name: 'Build and publish artifact for release'
-    needs: build_test_job
+    runs-on: ${{ matrix.os }}
+    needs: test_action_job
+    strategy:
+        matrix:
+          os: [windows-latest, ubuntu-latest, macos-latest]
+
     steps:
     - name: 'Checking out repo code'
       uses: actions/checkout@v3
