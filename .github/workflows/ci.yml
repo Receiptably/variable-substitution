@@ -4,6 +4,10 @@ on:
       - main
   push:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build_test_job:
     name: 'Build and test job'
@@ -115,3 +119,27 @@ jobs:
       run: |
         $test_file = Get-Content -Path src\Tests\Resources\test.json -Raw
         Write-Host $test_file
+
+  build_action_artifact:
+    name: 'Build and publish artifact for release'
+    needs: build_test_job
+    steps:
+    - name: 'Checking out repo code'
+      uses: actions/checkout@v3
+
+    - run: mkdir -p artifact/build
+
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: 'Install node modules'
+      run: |
+        npm install
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: built-artifact
+        path: artifact/build
+
