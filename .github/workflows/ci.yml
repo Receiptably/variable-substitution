@@ -120,12 +120,12 @@ jobs:
         Write-Host $test_file
 
   create-release-job:
-    name: 'Build and publish artifact for release'
+    name: 'Build and create release'
     runs-on: ubuntu-latest
     needs: test_action_job
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: actions/setup-node@v3
         with:
