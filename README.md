@@ -1,7 +1,7 @@
 # Notice
-This is a fork of a fork from [github.com/microsoft/variable-substitution](https://github.com/microsoft/variable-substitution), so that I could fix the 'node12 is being deprecated' warning.
+This is a fork of a fork from [github.com/microsoft/variable-substitution](https://github.com/microsoft/variable-substitution).
 
-I forked this from [github.com/rajbos-actions/variable-substitution](https://github.com/rajbos-actions/variable-substitution) fork that had already resolved the 'node12 is being deprecated' warning. This was so I could use receiptably in the action name and remove some additional workflows and code that were added by them, lightening the weight a tiny bit.
+I forked this from [github.com/rajbos-actions/variable-substitution](https://github.com/rajbos-actions/variable-substitution), where they had already resolved the 'node12 is being deprecated' warning. This was so I could use receiptably in the action name and remove some additional workflows and code that were added by them, lightening the weight a tiny bit. It also gave me a chance to automate some more of the process.
 
 Some other modifications:
 - Updated pipelines so there is no need to commit node_modules.
