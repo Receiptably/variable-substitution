@@ -1,8 +1,7 @@
 on:
-  pull_request:
-    branches:
-      - main
   push:
+    tags:
+      - 'v*'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -120,31 +119,60 @@ jobs:
         $test_file = Get-Content -Path src\Tests\Resources\test.json -Raw
         Write-Host $test_file
 
-  build_action_artifact:
+  create-release-job:
     name: 'Build and publish artifact for release'
     runs-on: ubuntu-latest
     # needs: test_action_job
-    defaults:
-      run:
-        working-directory: ./build
-
     steps:
-    - name: 'Checking out repo code'
-      uses: actions/checkout@v3
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
 
-    - name: 'Install node modules and build'
-      run: |
-        npm install
-        npm run build
+      - name: 'Install node modules and build'
+        run: |
+          npm install
 
-    - name: Upload Artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: build
-        path: build/artifact/*
-        if-no-files-found: error
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: (${{ github.ref }}) Github Actions Variable Substitution
+          body: |
+            With the Variable Substitution Action for GitHub, you can apply variable substitution to XML, JSON and YAML based configuration and parameter files.
+
+            The definition of this Github Action is in [action.yml](https://github.com/microsoft/variable-substitution/blob/master/action.yml).
+
+            # End-to-End Sample Workflow
+
+            </hr>
+
+            ## Sample workflow to apply Variable substitution on XML, JSON, YML files
+
+            ```yaml
+            # .github/workflows/var-substitution.yml
+            on: [push]
+            name: variable substitution in json, xml, and yml files
+
+            jobs:
+              build:
+                runs-on: windows-latest
+                steps:
+                - uses: microsoft/variable-substitution@v1 
+                  with:
+                    files: 'Application/*.json, Application/*.yaml, ./Application/SampleWebApplication/We*.config'
+                  env:
+                    Var1: "value1"
+                    Var2.key1: "value2"
+                    SECRET: ${{ secrets.SOME_SECRET }}
+            ```
+
+            Released under [MIT license](https://github.com/microsoft/variable-substitution/blob/master/LICENSE)
+          draft: false
+          prerelease: false
 
