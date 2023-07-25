@@ -1,19 +1,19 @@
 import core = require("@actions/core");
-import * as os from 'os';
-import * as minimatch from 'minimatch';
+import os = require('os');
+import minimatch = require('minimatch');
 import fs = require('fs');
 
 import path = require('path');
 
-export function findfiles(filepath: string){
+export function findfiles(filepath: string) {
 
     core.debug("Finding files matching input: " + filepath);
 
-    let filesList : string [];
+    let filesList: string[];
     if (filepath.indexOf('*') == -1 && filepath.indexOf('?') == -1) {
 
         // No pattern found, check literal path to a single file
-        if(exist(filepath)) {
+        if (exist(filepath)) {
             filesList = [filepath];
         }
         else {
@@ -22,7 +22,7 @@ export function findfiles(filepath: string){
         }
     } else {
         filepath = path.join(process.env.GITHUB_WORKSPACE, filepath);
-        let firstWildcardIndex = function(str: string) {
+        let firstWildcardIndex = function (str: string) {
             let idx = str.indexOf('*');
 
             let idxOfWildcard = str.indexOf('?');
@@ -42,7 +42,7 @@ export function findfiles(filepath: string){
         core.debug('Index of first wildcard: ' + idx);
         let slicedPath = filepath.slice(0, idx);
         let findPathRoot = path.dirname(slicedPath);
-        if(slicedPath.endsWith("\\") || slicedPath.endsWith("/")){
+        if (slicedPath.endsWith("\\") || slicedPath.endsWith("/")) {
             findPathRoot = slicedPath;
         }
 
@@ -52,7 +52,7 @@ export function findfiles(filepath: string){
         let allFiles = find(findPathRoot);
 
         // Now matching the pattern against all files
-        filesList = match(allFiles, filepath, '', {matchBase: true, nocase: !!os.type().match(/^Win/) });
+        filesList = match(allFiles, filepath, '', { matchBase: true, nocase: !!os.type().match(/^Win/) });
 
         // Fail if no matching files were found
         if (!filesList || filesList.length == 0) {
@@ -141,7 +141,7 @@ function find(findPath: string): string[] {
         return result;
     }
     catch (err) {
-        throw new Error('LIB_OperationFailed' + 'find'+ err.message);
+        throw new Error('LIB_OperationFailed' + 'find' + err.message);
     }
 }
 
