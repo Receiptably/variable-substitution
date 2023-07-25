@@ -1,7 +1,7 @@
 export function isPredefinedVariable(variable: string): boolean {
     let predefinedVarPrefix = ['runner.', 'azure_http_user_agent', 'common.', 'system.'];
-    for(let varPrefix of predefinedVarPrefix) {
-        if(variable.toLowerCase().startsWith(varPrefix)) {
+    for (let varPrefix of predefinedVarPrefix) {
+        if (variable.toLowerCase().startsWith(varPrefix)) {
             return true;
         }
     }
@@ -12,21 +12,21 @@ export function getVariableMap() {
     let variableMap = new Map();
     let variables = process.env;
     Object.keys(variables).forEach(key => {
-        if(!isPredefinedVariable(key)) {
+        if (!isPredefinedVariable(key)) {
             variableMap.set(key, variables[key]);
         }
     });
     return variableMap;
 }
 
-export function isEmpty(object){
-    if(object == null || object == "")
+export function isEmpty(object) {
+    if (object == null || object == "")
         return true;
     return false;
 }
 
-export function isObject(object){
-    if(object == null || object == "" || typeof(object) != 'object'){
+export function isObject(object) {
+    if (object == null || object == "" || typeof (object) != 'object') {
         return false;
     }
     return true;
@@ -42,7 +42,7 @@ export class EnvTreeUtility {
 
     public static getEnvVarTree() {
         let util = new EnvTreeUtility();
-        if(!util.envVarTree) {
+        if (!util.envVarTree) {
             util.envVarTree = util.createEnvTree(getVariableMap());
         }
 
@@ -59,12 +59,12 @@ export class EnvTreeUtility {
                 '__proto__': null
             }
         };
-        for(let [key, value] of envVariables.entries()) {
+        for (let [key, value] of envVariables.entries()) {
             let envVarTreeIterator = envVarTree;
             let envVariableNameArray = key.split('.');
-            
-            for(let variableName of envVariableNameArray) {
-                if(envVarTreeIterator.child[variableName] === undefined || typeof envVarTreeIterator.child[variableName] === 'function') {
+
+            for (let variableName of envVariableNameArray) {
+                if (envVarTreeIterator.child[variableName] === undefined || typeof envVarTreeIterator.child[variableName] === 'function') {
                     envVarTreeIterator.child[variableName] = {
                         value: null,
                         isEnd: false,
@@ -80,13 +80,13 @@ export class EnvTreeUtility {
     }
 
     checkEnvTreePath(jsonObjectKey, index, jsonObjectKeyLength, envVarTree) {
-        if(index == jsonObjectKeyLength) {
+        if (index == jsonObjectKeyLength) {
             return envVarTree;
         }
-        if(envVarTree.child[ jsonObjectKey[index] ] === undefined || typeof envVarTree.child[ jsonObjectKey[index] ] === 'function') {
+        if (envVarTree.child[jsonObjectKey[index]] === undefined || typeof envVarTree.child[jsonObjectKey[index]] === 'function') {
             return undefined;
-       }
-        return this.checkEnvTreePath(jsonObjectKey, index + 1, jsonObjectKeyLength, envVarTree.child[ jsonObjectKey[index] ]);
+        }
+        return this.checkEnvTreePath(jsonObjectKey, index + 1, jsonObjectKeyLength, envVarTree.child[jsonObjectKey[index]]);
     }
 
     private envVarTree: varTreeNode = null;

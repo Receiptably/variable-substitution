@@ -2,9 +2,9 @@ import core = require('@actions/core');
 
 import { EnvTreeUtility } from "./operations/envVariableUtility";
 import { JsonSubstitution } from './operations/jsonVariableSubstitutionUtility';
+import { findfiles } from "./operations/utility";
 import { XmlDomUtility } from "./operations/xmlDomUtility";
 import { XmlSubstitution } from './operations/xmlVariableSubstitution';
-import { findfiles } from "./operations/utility";
 
 import fs = require('fs');
 import yaml = require('js-yaml');
@@ -14,35 +14,35 @@ export class VariableSubstitution {
     async run() {
         let filesInput = core.getInput("files", { required: true });
         let files = filesInput.split(",");
-        if(files.length > 0){
+        if (files.length > 0) {
             this.segregateFilesAndSubstitute(files);
         }
         else {
             throw Error('File Tranformation is not enabled. Please provide JSON/XML or YAML target files for variable substitution.');
         }
     }
-    
+
     segregateFilesAndSubstitute(files: string[]) {
         let isSubstitutionApplied: boolean = false;
-        for(let file of files){
+        for (let file of files) {
             let matchedFiles = findfiles(file.trim());
-            if(matchedFiles.length == 0) {
+            if (matchedFiles.length == 0) {
                 core.error('No file matched with specific pattern: ' + file);
                 continue;
             }
-            for(let file of matchedFiles) {
+            for (let file of matchedFiles) {
                 let fileBuffer: Buffer = fs.readFileSync(file);
                 let fileEncodeType = fileEncoding.detectFileEncoding(file, fileBuffer);
                 let fileContent: string = fileBuffer.toString();
-                if(fileEncodeType.withBOM) {
+                if (fileEncodeType.withBOM) {
                     fileContent = fileContent.slice(1);
                 }
-                if(this.isJson(file, fileContent)) {
+                if (this.isJson(file, fileContent)) {
                     console.log("Applying variable substitution on JSON file: " + file);
-                    let jsonSubsitution =  new JsonSubstitution();
+                    let jsonSubsitution = new JsonSubstitution();
                     let jsonObject = this.fileContentCache.get(file);
                     let isJsonSubstitutionApplied = jsonSubsitution.substituteJsonVariable(jsonObject, EnvTreeUtility.getEnvVarTree());
-                    if(isJsonSubstitutionApplied) {
+                    if (isJsonSubstitutionApplied) {
                         fs.writeFileSync(file, (fileEncodeType.withBOM ? '\uFEFF' : '') + JSON.stringify(jsonObject, null, 4));
                         console.log(`Successfully updated file: ${file}`);
                     }
@@ -51,16 +51,16 @@ export class VariableSubstitution {
                     }
                     isSubstitutionApplied = isJsonSubstitutionApplied || isSubstitutionApplied;
                 }
-                else if(this.isXml(file, fileContent)) {
-                    console.log("Applying variable substitution on XML file: " + file);   
+                else if (this.isXml(file, fileContent)) {
+                    console.log("Applying variable substitution on XML file: " + file);
                     let xmlDomUtilityInstance: XmlDomUtility = this.fileContentCache.get(file);
                     let xmlSubstitution = new XmlSubstitution(xmlDomUtilityInstance);
                     let isXmlSubstitutionApplied = xmlSubstitution.substituteXmlVariables();
-                    if(isXmlSubstitutionApplied) {
+                    if (isXmlSubstitutionApplied) {
                         let xmlDocument = xmlDomUtilityInstance.getXmlDom();
                         this.replaceEscapeXMLCharacters(xmlDocument);
-                        let domContent = ( fileEncodeType.withBOM? '\uFEFF' : '' ) + xmlDomUtilityInstance.getContentWithHeader(xmlDocument);
-                        for(let replacableTokenValue in xmlSubstitution.replacableTokenValues) {
+                        let domContent = (fileEncodeType.withBOM ? '\uFEFF' : '') + xmlDomUtilityInstance.getContentWithHeader(xmlDocument);
+                        for (let replacableTokenValue in xmlSubstitution.replacableTokenValues) {
                             core.debug('Substituting original value in place of temp_name: ' + replacableTokenValue);
                             domContent = domContent.split(replacableTokenValue).join(xmlSubstitution.replacableTokenValues[replacableTokenValue]);
                         }
@@ -71,13 +71,13 @@ export class VariableSubstitution {
                         console.log('Skipped updating file: ' + file);
                     }
                     isSubstitutionApplied = isXmlSubstitutionApplied || isSubstitutionApplied;
-                }                
-                else if(this.isYaml(file, fileContent)) {
+                }
+                else if (this.isYaml(file, fileContent)) {
                     console.log("Applying variable substitution on YAML file: " + file);
-                    let jsonSubsitution =  new JsonSubstitution();
+                    let jsonSubsitution = new JsonSubstitution();
                     let yamlObject = this.fileContentCache.get(file);
                     let isYamlSubstitutionApplied = jsonSubsitution.substituteJsonVariable(yamlObject, EnvTreeUtility.getEnvVarTree());
-                    if(isYamlSubstitutionApplied) {
+                    if (isYamlSubstitutionApplied) {
                         fs.writeFileSync(file, (fileEncodeType.withBOM ? '\uFEFF' : '') + yaml.safeDump(yamlObject));
                         console.log(`Successfully updated config file: ${file}`);
                     }
@@ -91,60 +91,60 @@ export class VariableSubstitution {
                 }
             }
         }
-    
-        if(!isSubstitutionApplied) {
+
+        if (!isSubstitutionApplied) {
             throw new Error("Failed to apply variable substitution");
         }
     }
-    
+
     private isJson(file: string, content: string): boolean {
         try {
             content = this.stripJsonComments(content);
             let jsonObject = JSON.parse(content);
-            if(!this.fileContentCache.has(file)) {
+            if (!this.fileContentCache.has(file)) {
                 this.fileContentCache.set(file, jsonObject);
             }
             return true;
         }
-        catch(exception) {
+        catch (exception) {
             this.parseException += "JSON parse error: " + exception + "\n";
             return false;
         }
     }
-    
-    private isYaml(file: string, content: string) : boolean {
+
+    private isYaml(file: string, content: string): boolean {
         try {
             let yamlObject = yaml.safeLoad(content);
-            if(!this.fileContentCache.has(file)) {
+            if (!this.fileContentCache.has(file)) {
                 this.fileContentCache.set(file, yamlObject);
             }
             return true;
         }
-        catch(exception) {
+        catch (exception) {
             this.parseException += "YAML parse error: " + exception + "\n";
             return false;
         }
     }
-    
+
     private isXml(file: string, content: string): boolean {
-        try{
+        try {
             let ltxDomUtiltiyInstance = new XmlDomUtility(content);
-            if(!this.fileContentCache.has(file)) {
+            if (!this.fileContentCache.has(file)) {
                 this.fileContentCache.set(file, ltxDomUtiltiyInstance);
             }
             return true;
         }
-        catch(exception) {
+        catch (exception) {
             this.parseException += "XML parse error: " + exception;
             return false;
         }
     }
-    
+
     private stripJsonComments(content) {
         if (!content || (content.indexOf("//") < 0 && content.indexOf("/*") < 0)) {
             return content;
         }
-    
+
         var currentChar;
         var nextChar;
         var insideQuotes = false;
@@ -152,24 +152,24 @@ export class VariableSubstitution {
         var insideComment = 0;
         var singlelineComment = 1;
         var multilineComment = 2;
-    
+
         for (var i = 0; i < content.length; i++) {
             currentChar = content[i];
             nextChar = i + 1 < content.length ? content[i + 1] : "";
-    
+
             if (insideComment) {
                 if (insideComment == singlelineComment && (currentChar + nextChar === '\r\n' || currentChar === '\n')) {
                     i--;
                     insideComment = 0;
                     continue;
                 }
-    
+
                 if (insideComment == multilineComment && currentChar + nextChar === '*/') {
                     i++;
                     insideComment = 0;
                     continue;
                 }
-    
+
             } else {
                 if (insideQuotes && currentChar == "\\") {
                     contentWithoutComments += currentChar + nextChar;
@@ -180,13 +180,13 @@ export class VariableSubstitution {
                     if (currentChar == '"') {
                         insideQuotes = !insideQuotes;
                     }
-    
+
                     if (!insideQuotes) {
                         if (currentChar + nextChar === '//') {
                             insideComment = singlelineComment;
                             i++;
                         }
-    
+
                         if (currentChar + nextChar === '/*') {
                             insideComment = multilineComment;
                             i++;
@@ -194,34 +194,34 @@ export class VariableSubstitution {
                     }
                 }
             }
-    
+
             if (!insideComment) {
                 contentWithoutComments += content[i];
             }
         }
-    
+
         return contentWithoutComments;
     }
-    
+
     private replaceEscapeXMLCharacters(xmlDOMNode) {
-        if(!xmlDOMNode || typeof xmlDOMNode == 'string') {
+        if (!xmlDOMNode || typeof xmlDOMNode == 'string') {
             return;
         }
-    
-        for(var xmlAttribute in xmlDOMNode.attrs) {
+
+        for (var xmlAttribute in xmlDOMNode.attrs) {
             xmlDOMNode.attrs[xmlAttribute] = xmlDOMNode.attrs[xmlAttribute].replace(/'/g, "APOS_CHARACTER_TOKEN");
         }
-    
-        for(var xmlChild of xmlDOMNode.children) {
+
+        for (var xmlChild of xmlDOMNode.children) {
             this.replaceEscapeXMLCharacters(xmlChild);
         }
-    }    
-    
+    }
+
     private fileContentCache = new Map<String, any>();
     private parseException: string = "";
 }
 
 let varSub = new VariableSubstitution();
-varSub.run().catch((error) => {	
-    core.setFailed(error);	
+varSub.run().catch((error) => {
+    core.setFailed(error);
 });

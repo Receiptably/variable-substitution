@@ -10,24 +10,24 @@ var expect = chai.expect;
 describe('Test JSON Variable Substitution', () => {
     var jsonObject, isApplied;
 
-    before(() => {       
+    before(() => {
         let stub = sinon.stub(EnvTreeUtility, "getEnvVarTree").callsFake(() => {
             let envVariables = new Map([
-                [ 'system.debug', 'true'],
-                [ 'data.ConnectionString', 'database_connection'],
-                [ 'data.userName', 'db_admin'],
-                [ 'data.password', 'db_pass'],
-                [ '&pl.ch@r@cter.k^y', '*.config'],
-                [ 'build.sourceDirectory', 'DefaultWorkingDirectory'],
-                [ 'user.profile.name.first', 'firstName'],
-                [ 'user.profile', 'replace_all'],
-                [ 'constructor.name', 'newConstructorName'],
-                [ 'constructor.valueOf', 'constructorNewValue'],
-                [ 'profile.users', '["suaggar","rok","asranja", "chaitanya"]'],
-                [ 'profile.enabled', 'false'],
-                [ 'profile.version', '1173'],
-                [ 'profile.somefloat', '97.75'],
-                [ 'profile.preimum_level', '{"suaggar": "V4", "rok": "V5", "asranja": { "type" : "V6"}}']
+                ['system.debug', 'true'],
+                ['data.ConnectionString', 'database_connection'],
+                ['data.userName', 'db_admin'],
+                ['data.password', 'db_pass'],
+                ['&pl.ch@r@cter.k^y', '*.config'],
+                ['build.sourceDirectory', 'DefaultWorkingDirectory'],
+                ['user.profile.name.first', 'firstName'],
+                ['user.profile', 'replace_all'],
+                ['constructor.name', 'newConstructorName'],
+                ['constructor.valueOf', 'constructorNewValue'],
+                ['profile.users', '["suaggar","rok","asranja", "chaitanya"]'],
+                ['profile.enabled', 'false'],
+                ['profile.version', '1173'],
+                ['profile.somefloat', '97.75'],
+                ['profile.preimum_level', '{"suaggar": "V4", "rok": "V5", "asranja": { "type" : "V6"}}']
             ]);
             let envVarTree = {
                 value: null,
@@ -36,13 +36,13 @@ describe('Test JSON Variable Substitution', () => {
                     '__proto__': null
                 }
             };
-            for(let [key, value] of envVariables.entries()) {
-                if(!isPredefinedVariable(key)) {
+            for (let [key, value] of envVariables.entries()) {
+                if (!isPredefinedVariable(key)) {
                     let envVarTreeIterator = envVarTree;
                     let envVariableNameArray = key.split('.');
-                    
-                    for(let variableName of envVariableNameArray) {
-                        if(envVarTreeIterator.child[variableName] === undefined || typeof envVarTreeIterator.child[variableName] === 'function') {
+
+                    for (let variableName of envVariableNameArray) {
+                        if (envVarTreeIterator.child[variableName] === undefined || typeof envVarTreeIterator.child[variableName] === 'function') {
                             envVarTreeIterator.child[variableName] = {
                                 value: null,
                                 isEnd: false,
@@ -57,11 +57,11 @@ describe('Test JSON Variable Substitution', () => {
             }
             return envVarTree;
         });
-        
+
         jsonObject = {
             'User.Profile': 'do_not_replace',
             'data': {
-                'ConnectionString' : 'connect_string',
+                'ConnectionString': 'connect_string',
                 'userName': 'name',
                 'password': 'pass'
             },
@@ -69,10 +69,10 @@ describe('Test JSON Variable Substitution', () => {
                 'ch@r@cter.k^y': 'v@lue'
             },
             'system': {
-                'debug' : 'no_change'
+                'debug': 'no_change'
             },
             'user.profile': {
-                'name.first' : 'fname'
+                'name.first': 'fname'
             },
             'constructor.name': 'myconstructorname',
             'constructor': {
@@ -94,7 +94,7 @@ describe('Test JSON Variable Substitution', () => {
             }
         };
 
-        let jsonSubsitution =  new JsonSubstitution();
+        let jsonSubsitution = new JsonSubstitution();
         isApplied = jsonSubsitution.substituteJsonVariable(jsonObject, EnvTreeUtility.getEnvVarTree());
         stub.restore();
     });
@@ -146,6 +146,6 @@ describe('Test JSON Variable Substitution', () => {
     });
 
     it("Validate Object", () => {
-        expect(jsonObject['profile']['preimum_level']).to.deep.equal({"suaggar": "V4", "rok": "V5", "asranja": { "type" : "V6"}});
+        expect(jsonObject['profile']['preimum_level']).to.deep.equal({ "suaggar": "V4", "rok": "V5", "asranja": { "type": "V6" } });
     });
 });

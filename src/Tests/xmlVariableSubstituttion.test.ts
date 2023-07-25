@@ -17,9 +17,9 @@ describe('Test Xml Variable Substitution', () => {
             new Map([
                 ['conntype', 'new_connType'],
                 ['MyDB', 'TestDB'],
-                ['webpages:Version' , '1.1.7.3'],
-                ['xdt:Transform' , 'DelAttributes'],
-                ['xdt:Locator' , 'Match(tag)'],
+                ['webpages:Version', '1.1.7.3'],
+                ['xdt:Transform', 'DelAttributes'],
+                ['xdt:Locator', 'Match(tag)'],
                 ['DefaultConnection', "Url=https://primary;Database=db1;ApiKey=11111111-1111-1111-1111-111111111111;Failover = {Url:'https://secondary', ApiKey:'11111111-1111-1111-1111-111111111111'}"],
                 ['OtherDefaultConnection', 'connectionStringValue2'],
                 ['ParameterConnection', 'New_Connection_String From xml var subs'],
@@ -32,15 +32,15 @@ describe('Test Xml Variable Substitution', () => {
         );
 
         function replaceEscapeXMLCharacters(xmlDOMNode) {
-            if(!xmlDOMNode || typeof xmlDOMNode == 'string') {
+            if (!xmlDOMNode || typeof xmlDOMNode == 'string') {
                 return;
             }
-        
-            for(var xmlAttribute in xmlDOMNode.attrs) {
+
+            for (var xmlAttribute in xmlDOMNode.attrs) {
                 xmlDOMNode.attrs[xmlAttribute] = xmlDOMNode.attrs[xmlAttribute].replace(/'/g, "APOS_CHARACTER_TOKEN");
             }
-        
-            for(var xmlChild of xmlDOMNode.children) {
+
+            for (var xmlChild of xmlDOMNode.children) {
                 replaceEscapeXMLCharacters(xmlChild);
             }
         }
@@ -51,11 +51,11 @@ describe('Test Xml Variable Substitution', () => {
         let xmlSubstitution = new XmlSubstitution(xmlDomUtilityInstance);
         let isApplied = xmlSubstitution.substituteXmlVariables();
         expect(isApplied).to.equal(true);
-        
+
         let xmlDocument = xmlDomUtilityInstance.getXmlDom();
         replaceEscapeXMLCharacters(xmlDocument);
         let domContent = '\uFEFF' + xmlDomUtilityInstance.getContentWithHeader(xmlDocument);
-        for(let replacableTokenValue in xmlSubstitution.replacableTokenValues) {
+        for (let replacableTokenValue in xmlSubstitution.replacableTokenValues) {
             domContent = domContent.split(replacableTokenValue).join(xmlSubstitution.replacableTokenValues[replacableTokenValue]);
         }
 
